@@ -1,9 +1,9 @@
 local PANEL = {}
+local DPointShopMenu = vgui.GetControlTable("DPointShopMenu")
 
 function PANEL:Init()
-	local Parent = self:GetParent()
 	self:Dock(FILL)
-	self:DockMargin(math.Clamp(ScreenScaleH(4), 4, 8), math.Clamp(ScreenScaleH(6), 6, 12), math.Clamp(ScreenScaleH(6), 6, 12), math.Clamp(ScreenScaleH(6), 6, 12))
+	self:DockMargin(2, math.Clamp(ScreenScaleH(10), 10, 18), math.Clamp(ScreenScaleH(10), 10, 18), math.Clamp(ScreenScaleH(10), 10, 18))
 	self.Angles = Angle(0, 0, 0)
 	self.Model = LocalPlayer():GetModel()
 	self:SetModel(self.Model)
@@ -18,13 +18,12 @@ function PANEL:Init()
 	self:SetCamPos(Vector(qModelSize, qModelSize, qModelSize) - Vector(0, qModelSize, 0))
 	self:SetLookAt((qModelMax + qModelMin) / 1.75)
 
-	Parent.Paint = function(s, w, h)
-		draw.RoundedBox(0, 0, 0, w, h, PS.Config.Dark)
-		surface.SetDrawColor(PS.Config.Black)
-		surface.DrawOutlinedRect(math.Clamp(ScreenScaleH(2), 2, 4), math.Clamp(ScreenScaleH(4), 4, 8), w - math.Clamp(ScreenScaleH(6), 6, 12), h - math.Clamp(ScreenScaleH(8), 8, 16), math.Clamp(ScreenScaleH(2), 2, 4))
-	end
-
 	return self
+end
+
+function PANEL:PaintOver(w, h)
+		surface.SetDrawColor(PS.Config.Black)
+		surface.DrawOutlinedRect(0, 0, w, h, math.Clamp(ScreenScaleH(2), 2, 4))
 end
 
 function PANEL:OnDepressed()

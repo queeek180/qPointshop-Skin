@@ -52,7 +52,7 @@ surface.CreateFont( "PS_ItemText", {
 local PANEL = {}
 
 function PANEL:Init()
-	self:SetSize( ScreenScale(512), ScreenScaleH(384) )
+	self:SetSize(ScreenScale(512), ScreenScaleH(384))
 	self:SetPos((ScrW() / 2) - (self:GetWide() / 2), (ScrH() / 2) - (self:GetTall() / 2))
 	self:DockPadding(math.Clamp(ScreenScaleH(2), 2, 4), math.Clamp(ScreenScaleH(2), 2, 4), math.Clamp(ScreenScaleH(2), 2, 4), math.Clamp(ScreenScaleH(2), 2, 4))
 
@@ -72,13 +72,13 @@ function PANEL:Init()
 
 	local qCloseButton = self:CloseButton(qTitleFrame, RIGHT)
 
-	local qSidePanelL = self:Panel(self, LEFT, self:GetWide() / 6, PS.Config.Darker)
+	local qSidePanelL = self:Panel(self, LEFT, ScreenScaleH(96), PS.Config.Darker)
 
-	local qCatPanel = self:Panel(qSidePanelL, TOP, qSidePanelL:GetWide(), PS.Config.Darker)
+	local qCatPanel = self:Panel(qSidePanelL, TOP, self:GetWide() / 6, PS.Config.Darker)
 	local qButPanel = self:Panel(qSidePanelL, BOTTOM, qSidePanelL:GetWide(), PS.Config.Darker)
 
 	if PS.Config.DisplayPreviewInMenu then
-		local qSidePanelR = self:Panel(self, RIGHT, self:GetWide() / 4, PS.Config.Dark)
+		local qSidePanelR = self:Panel(self, RIGHT, self:GetWide() / 4.17, PS.Config.Dark)
 		local qPreview = vgui.Create('DPointShopPreview', qSidePanelR)
 	end
 
@@ -111,8 +111,7 @@ function PANEL:Init()
 			for _, ITEM in ipairs(qItems) do -- looping INSIDE a loop INSIDE a loop???!! :glasses:glasses:
 				if ITEM.Category == CATEGORY.Name and not ITEM.SubCategory then
 					ITEM.SubCategory = CATEGORY.DefaultSubcategoryName
-					print(ITEM.SubCategory)
-				end
+			end
 
 				if (ITEM.Category ~= CATEGORY.Name or ITEM.SubCategory ~= CATEGORY.SubcategoryOrder[i])  then
 					continue
@@ -175,7 +174,7 @@ end
 function PANEL:Label(Parent, Dock, Font, Text, ContentAlign, TitleBar)
 	local qLabel = vgui.Create("DLabel", Parent)
 	qLabel:Dock(Dock)
-	qLabel:DockMargin(ScreenScaleH(2), 0, ScreenScaleH(2), 0)
+	qLabel:DockMargin(math.Clamp(ScreenScaleH(2), 2, 4), 0, math.Clamp(ScreenScaleH(2), 2, 4), 0)
 	qLabel:SetFont(Font)
 	qLabel:SetTextColor(PS.Config.White)
 	qLabel:SetText(Text or "Pointshop")
@@ -264,12 +263,35 @@ function PANEL:CatButton(Parent, Panel, Dock, CatName, CatIcon)
 end
 
 function PANEL:SubCatList(Parent, Dock, CatName)
-	local qSubCatList = vgui.Create( "DCategoryList", Parent)
+	local qSubCatList = vgui.Create("DCategoryList", Parent)
 	qSubCatList:Dock(Dock)
+	qSubCatList:DockMargin(0, 0, 0, 0)
+	qSubCatList:GetCanvas():DockPadding(math.Clamp(ScreenScaleH(10), 10, 18), math.Clamp(ScreenScaleH(10), 10, 18), math.Clamp(ScreenScaleH(10), 10, 18), math.Clamp(ScreenScaleH(10), 10, 18))
 
 	qSubCatList.Paint = function(s, w, h)
 		draw.RoundedBox(0, 0, 0, w, h, PS.Config.Dark)
 	end
+
+	qSubCatList.PerformLayoutInternal = function(self)
+		local Tall = self.pnlCanvas:GetTall()
+		local Wide = self:GetWide()
+		local YPos = 0
+
+		self:Rebuild()
+
+		self.VBar:SetUp( self:GetTall(), self.pnlCanvas:GetTall() )
+		YPos = self.VBar:GetOffset()
+
+		self.pnlCanvas:SetPos(0, YPos)
+		self.pnlCanvas:SetWide(Wide)
+
+		self:Rebuild()
+
+		if ( Tall != self.pnlCanvas:GetTall() ) then
+			self.VBar:SetScroll( self.VBar:GetScroll() ) -- Make sure we are not too far down!
+		end
+	end
+	
 
 	local vbar = qSubCatList:GetVBar()
 	vbar.Paint = function(s, w, h) 
@@ -286,17 +308,19 @@ function PANEL:SubCatList(Parent, Dock, CatName)
 	vbar.btnGrip.Paint = function(s, w, h) 
 		draw.RoundedBox(0, 0, 0, w, h, PS.Config.Darker)
 	end
-	vbar:SetWide(ScreenScaleH(6))
-	vbar:DockMargin(ScreenScaleH(2), ScreenScaleH(4), ScreenScaleH(2), ScreenScaleH(4))
+	vbar:SetWide(math.Clamp(ScreenScaleH(8), 8, 16))
+	vbar:DockMargin(0, math.Clamp(ScreenScaleH(10), 10, 18), 0, math.Clamp(ScreenScaleH(10), 10, 18))
 
 	return qSubCatList
 end
 
 function PANEL:SubCat(Parent, Dock, SubCatName)
 	local qSubCategories = Parent:Add(SubCatName)
-	qSubCategories:DockMargin(ScreenScaleH(4), ScreenScaleH(2), ScreenScaleH(4), ScreenScaleH(2))
+	qSubCategories:DockPadding(0, 0, 0, math.Clamp(ScreenScaleH(4), 4, 8))
+	qSubCategories:DockMargin(0, 0, 0, math.Clamp(ScreenScaleH(4), 4, 8))
 	qSubCategories:SetHeaderHeight(draw.GetFontHeight("PS_DefaultBold") * 2)
 	qSubCategories:SetAnimTime(0)
+
 	qSubCategories.Header:SetContentAlignment(5)
 	qSubCategories.Header:SetFont("PS_DefaultBold")
 	qSubCategories.Header:SetTextColor(PS.Config.White)
@@ -326,12 +350,11 @@ function PANEL:SubCat(Parent, Dock, SubCatName)
 end
 
 function PANEL:ItemPanel(Parent)
-	local qItemPanel = vgui.Create('DIconLayout', Parent)
+	local qItemPanel = vgui.Create('DIconLayout', qSubScroll)
 	qItemPanel:Dock(FILL)
-	qItemPanel:DockPadding(math.Clamp(ScreenScaleH(4), 4, 8), math.Clamp(ScreenScaleH(4), 4, 8), math.Clamp(ScreenScaleH(4), 4, 8), math.Clamp(ScreenScaleH(4), 4, 8))
-	qItemPanel:SetBorder(math.Clamp(ScreenScaleH(4), 4, 8))
-	qItemPanel:SetSpaceX(math.Clamp(ScreenScaleH(4), 4, 8))
-	qItemPanel:SetSpaceY(math.Clamp(ScreenScaleH(4), 4, 8))
+	qItemPanel:DockMargin(math.Clamp(ScreenScaleH(4), 4, 8), math.Clamp(ScreenScaleH(2), 2, 4), math.Clamp(ScreenScaleH(4), 4, 8), math.Clamp(ScreenScaleH(4), 4, 8))
+	qItemPanel:SetSpaceX(math.Clamp(ScreenScaleH(2), 2, 4))
+	qItemPanel:SetSpaceY(math.Clamp(ScreenScaleH(2), 2, 4))
 
 	return qItemPanel
 end
@@ -670,7 +693,7 @@ function PANEL:Query(qText01, qText02, qButText01, qButText02, qItem, qItemID, q
 	qQuery.Paint = function(s, w, h)
 		Derma_DrawBackgroundBlur(qQuery, nil)
 		surface.SetDrawColor(PS.Config.Black)
-		surface.DrawOutlinedRect( 0, 0, w, h, math.Clamp(ScreenScaleH(2), 2, 4) )
+		surface.DrawOutlinedRect( 0, 0, w, h, math.Clamp(ScreenScaleH(2), 2, 4))
 		draw.RoundedBox(0, math.Clamp(ScreenScaleH(2), 2, 4), math.Clamp(ScreenScaleH(2), 2, 4), w - math.Clamp(ScreenScaleH(4), 4, 8), h - math.Clamp(ScreenScaleH(4), 4, 8), PS.Config.Darker)
 	end
 
