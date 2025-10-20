@@ -235,7 +235,7 @@ function PANEL:PostDrawModel()
 	if PS.HoverMaterial then
 		local ITEM = PS.Items[PS.HoverMaterial]
 
-		if ITEM.Trail then
+		if ITEM.NoPreview then
 			return
 		end
 

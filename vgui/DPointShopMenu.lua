@@ -109,8 +109,9 @@ function PANEL:Init()
 			qSubBuilt:SetContents(qSubItems)
 
 			for _, ITEM in ipairs(qItems) do -- looping INSIDE a loop INSIDE a loop???!! :glasses:glasses:
-				if not ITEM.SubCategory then
+				if ITEM.Category == CATEGORY.Name and not ITEM.SubCategory then
 					ITEM.SubCategory = CATEGORY.DefaultSubcategoryName
+					print(ITEM.SubCategory)
 				end
 
 				if (ITEM.Category ~= CATEGORY.Name or ITEM.SubCategory ~= CATEGORY.SubcategoryOrder[i])  then
