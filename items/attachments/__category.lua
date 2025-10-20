@@ -6,6 +6,5 @@ CATEGORY.EnableSubcategories = true -- currently unused. will be required once s
 CATEGORY.DefaultSubcategoryName = "Heads, Hats & Masks" -- if an item does not have a subcategory set, it will default to this
 CATEGORY.SubcategoryOrder = {
 	"Heads, Hats & Masks",
-	"Accessories",
 	"Backpacks",
 }
