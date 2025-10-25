@@ -30,7 +30,12 @@ function Player:PS_PlayerDeath()
 	for item_id, item in pairs(self.PS_Items) do
 		if item.Equipped then
 			local ITEM = PS.Items[item_id]
-			timer.Simple(0.1, function() ITEM:OnHolster(self, item.Modifiers) end) -- hacky timer added so preview keep playermodel on death. TODO: proper way
+
+	    if self:PS_CanPerformAction(item_id) then -- hack to allow preview updates while dead/spec
+	      continue
+	    end
+
+			ITEM:OnHolster(self, item.Modifiers)
 		end
 	end
 end
@@ -120,13 +125,10 @@ function Player:PS_CanPerformAction(itemname)
 	local allowed = true
 	local itemexcept = false
 	if itemname then itemexcept = PS.Items[itemname].Except end
+  if PS.Items[itemname] and ((PS.Items[itemname].Model ~= nil and PS.Items[itemname].Follower == nil) or PS.Items[itemname].ManipBone) then itemexcept = true end -- hack to allow preview updates while dead/spec
 
 	if (self.IsSpec and self:IsSpec()) and not itemexcept then allowed = false end
 	if not self:Alive() and not itemexcept then allowed = false end
-
-	if not allowed then
-		self:PS_Notify('You\'re not allowed to do that at the moment!')
-	end
 
 	return allowed
 end
@@ -349,7 +351,6 @@ function Player:PS_EquipItem(item_id)
 		end
 	end
 
-
 	if CATEGORY.SharedCategories then
 		local ConCatCats = CATEGORY.Name
 		for p, c in pairs( CATEGORY.SharedCategories ) do
@@ -363,6 +364,7 @@ function Player:PS_EquipItem(item_id)
 				end
 			end
 		end
+
 		local NumEquipped = self.PS_NumItemsEquippedFromCategory
 		for id, item in pairs(self.PS_Items) do
 			if not self:PS_HasItemEquipped(id) then continue end
@@ -384,7 +386,7 @@ function Player:PS_EquipItem(item_id)
 
 	self.PS_Items[item_id].Equipped = true
 
-	if (self.IsSpec and not self:IsSpec()) or self:Alive() then
+	if self:PS_CanPerformAction(item_id) then -- hack to allow preview updates while dead/spec
 		ITEM:OnEquip(self, self.PS_Items[item_id].Modifiers)
 	end
 
@@ -416,9 +418,7 @@ function Player:PS_HolsterItem(item_id)
 		return false
 	end
 
-	if not (self.IsSpec and self:IsSpec()) or self:Alive() then
-		ITEM:OnHolster(self)
-	end
+	ITEM:OnHolster(self)
 
 	self:PS_Notify('Holstered ', ITEM.Name, '.')
 	
@@ -443,7 +443,6 @@ function Player:PS_ModifyItem(item_id, modifications)
 	if not PS.Items[item_id] then return false end
 	if not self:PS_HasItem(item_id) then return false end
 	if not type(modifications) == "table" then return false end
-	if not self:PS_CanPerformAction(item_id) then return false end
 	
 	local ITEM = PS.Items[item_id]
 
@@ -458,7 +457,9 @@ function Player:PS_ModifyItem(item_id, modifications)
 		self.PS_Items[item_id].Modifiers[key] = value
 	end
 
-	ITEM:OnModify(self, self.PS_Items[item_id].Modifiers)
+	if self:PS_CanPerformAction(item_id) then
+		ITEM:OnModify(self, self.PS_Items[item_id].Modifiers)
+	end
 
 	hook.Call( "PS_ItemUpdated", nil, self, item_id, PS_ITEM_MODIFY, modifications )
 	
@@ -468,11 +469,8 @@ function Player:PS_ModifyItem(item_id, modifications)
 end
 
 -- set player model
-function Player:PS_SetModel(Model)
-	if not self:Alive() then
-		return
-	end
 
+function Player:PS_SetModel(Model)
   self:SetModel(Model)
 
 	local OldHands = self:GetHands()
