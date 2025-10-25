@@ -305,9 +305,13 @@ function PS:LoadDataProvider()
 end
 
 function PS:GetPlayerData(ply, callback)
-	self.DataProvider:GetData(ply, function(points, items)
-		callback(PS:ValidatePoints(tonumber(points)), PS:ValidateItems(items))
+	self.DataProvider:GetData(ply, function(points, items, redeemed)
+		callback(PS:ValidatePoints(tonumber(points)), PS:ValidateItems(items), redeemed)
 	end)
+end
+
+function PS:Redeemed(ply)
+	self.DataProvider:Redeemed(ply)
 end
 
 function PS:SetPlayerData(ply, points, items)

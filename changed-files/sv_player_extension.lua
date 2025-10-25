@@ -41,6 +41,7 @@ function Player:PS_PlayerDeath()
 end
 
 function Player:PS_PlayerInitialSpawn()
+  self.PS_Redeemed = 0
 	self.PS_Points = 0
 	self.PS_Items = {}
 
@@ -87,6 +88,31 @@ function Player:PS_PlayerInitialSpawn()
 		end)
 	end
 
+	if PS.Config.StartingPoints or PS.Config.StartingItems then
+	  timer.Simple(5, function()
+	  	if !IsValid(self) then 
+	  	  return 
+	  	end
+
+	  	if self.PS_Redeemed then
+	  	  return
+	  	end
+
+      if PS.Config.StartingItems then
+		  	for _, ITEM in pairs(PS.Freebies) do
+		  	  self:PS_GiveItem(ITEM.ID)
+		  	end
+		  end
+
+		  if PS.Config.StartingPoints then
+		  	self:PS_GivePoints(PS.Config.StartingPointsAmount or 0)
+		  end
+
+	  	PS:Redeemed(self)
+	  	self:PS_Notify("You have received starting bonuses!")
+	  end)
+	end
+
 	if PS.Config.PointsOverTime then
 		timer.Create('PS_PointsOverTime_' .. self:UniqueID(), PS.Config.PointsOverTimeDelay * 60, 0, function()
 			if !IsValid(self) then return end
@@ -109,10 +135,12 @@ function Player:PS_Save()
 end
 
 function Player:PS_LoadData()
+	self.PS_Redeemed = 0
 	self.PS_Points = 0
 	self.PS_Items = {}
 
-	PS:GetPlayerData(self, function(points, items)
+	PS:GetPlayerData(self, function(points, items, redeemed)
+    self.PS_Redeemed = redeemed
 		self.PS_Points = points
 		self.PS_Items = items
 
