@@ -468,11 +468,10 @@ function Player:PS_ModifyItem(item_id, modifications)
 end
 
 -- set player model
-
 function Player:PS_SetModel(Model)
-	net.Start('PS_SetModel')
-	net.WriteEntity(self)
-	net.Broadcast()
+	if not self:Alive() then
+		return
+	end
 
   self:SetModel(Model)
 
@@ -494,6 +493,10 @@ function Player:PS_SetModel(Model)
 		HandEnt:AttachToViewmodel(self:GetViewModel(0))
 		HandEnt:Spawn()
 	end
+
+	net.Start('PS_SetModel')
+	net.WriteEntity(self)
+	net.Send(self)
 end
 
 -- clientside Models
