@@ -117,7 +117,7 @@ function PANEL:Init()
 					continue
 				end
 
-				if ply:PS_HasItem(ITEM.ID) then
+				if ply:PS_HasItem(ITEM.ID) or (ITEM.Price == 0 and PS.Config.StartingItems and not ply.PS_Redeemed) then
 					local qInvFrame = self:ItemFrame(qInvItems, qSubItems, ITEM, ply)
 					local qItemContent = self:ItemContent(qInvFrame, "Inventory", CATEGORY.Name, ITEM)
 					continue
@@ -381,7 +381,7 @@ function PANEL:ItemFrame(Parent, Adopt, ITEM, ply)
 			qItemFrame:SetTextColor(PS.Config.NotAfford)
 		end
 
-		if not qItemFrame:IsHovered() and not qItemFrame:IsChildHovered(true) then
+		if not qItemFrame:IsHovered() then
 			qItemFrame:SetText(ITEM.Name)
 		else
 			qItemFrame:SetText(PS.Config.CalculateBuyPrice(ply, ITEM))
@@ -485,7 +485,7 @@ function PANEL:ItemModel(Parent, Width, Height, FOV, Player, ITEM)
 
 	function qItemModel:LayoutEntity(ent)
 		if not Player then
-			if Parent:IsHovered() or Parent:IsChildHovered() then
+			if Parent:IsHovered() then
 				local qRotateAngle = ent:GetAngles()
 				qRotateAngle:RotateAroundAxis(Vector(0, 0, 0.1), 8)
 				ent:SetAngles(qRotateAngle)
@@ -495,7 +495,7 @@ function PANEL:ItemModel(Parent, Width, Height, FOV, Player, ITEM)
 			return
 		end
 
-		if Parent:IsHovered() or Parent:IsChildHovered() then
+		if Parent:IsHovered() then
 			ent:SetSequence("menu_walk")
 		else
 			ent:SetSequence("idle_all_01")
@@ -580,7 +580,7 @@ function PANEL:ItemMenu(ply, ITEM, qItem, qItemParent, qItemAdopt, SubMenu) -- t
 
 			qGiveBut.OnCursorExited = function()
 				timer.Simple(0.1, function()
-					if qGiveMenu:IsHovered() or qGiveMenu:IsChildHovered() then
+					if qGiveMenu:IsHovered() then
 						return
 					end
 
