@@ -621,7 +621,9 @@ function PANEL:ItemMenu(ply, ITEM, qItem, qItemParent, qItemAdopt, SubMenu) -- t
 							return
 						end
 
-						qGiveMenu:SetVisible(false)
+						if IsValid(qGiveMenu) then
+							qGiveMenu:SetVisible(false)
+						end
 					end)
 				end
 			end
